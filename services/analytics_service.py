@@ -1,4 +1,3 @@
-
 from analytics.estadisticas import Estadisticas
 
 
@@ -21,3 +20,14 @@ class AnalyticsService:
     def total_diario(self):
         trans = self.transaccion_repo.obtener_todas()
         return Estadisticas.total_diario(trans)
+
+    # ============================================================
+    # MÉTODO NUEVO PARA EL MENÚ ADMIN
+    # ============================================================
+
+    def obtener_estadisticas(self):
+        """
+        Devuelve estadísticas globales del sistema.
+        """
+        trans = self.transaccion_repo.obtener_todas()
+        return Estadisticas.estadisticas_generales(trans)

@@ -1,4 +1,3 @@
-
 import numpy as np
 from datetime import datetime
 
@@ -10,26 +9,23 @@ class Estadisticas:
     {
         "id": "...",
         "cuenta_id": "...",
-        "tipo": "deposito" | "retiro" | "transferencia_in" | "transferencia_out",
+        "tipo": "deposito" | "retiro" | "transferencia",
         "monto": float,
         "fecha": "2026-02-01T10:00:00"
     }
     """
 
-   
+    # ============================================================
     # FILTROS BÁSICOS
-   
+    # ============================================================
 
     @staticmethod
     def _filtrar_por_tipo(transacciones, tipo):
-        """
-        Devuelve un array de montos filtrados por tipo de transacción.
-        """
         return np.array([t["monto"] for t in transacciones if t["tipo"] == tipo], dtype=float)
 
-    
+    # ============================================================
     # MÉTRICAS POR CUENTA
-    
+    # ============================================================
 
     @staticmethod
     def total_depositos(transacciones):
@@ -78,14 +74,12 @@ class Estadisticas:
 
         return len(transacciones) / len(dias_unicos)
 
+    # ============================================================
     # RESUMEN COMPLETO POR CUENTA
-    
+    # ============================================================
 
     @staticmethod
     def resumen_por_cuenta(transacciones):
-        """
-        Devuelve un diccionario con TODAS las métricas solicitadas.
-        """
         return {
             "total_depositos": Estadisticas.total_depositos(transacciones),
             "total_gastos": Estadisticas.total_gastos(transacciones),
@@ -95,16 +89,12 @@ class Estadisticas:
             "percentiles": Estadisticas.percentiles(transacciones)
         }
 
-   
-    # MÉTRICAS GLOBALES DEL BANCO (para dashboard)
-    
+    # ============================================================
+    # MÉTRICAS GLOBALES DEL BANCO
+    # ============================================================
 
     @staticmethod
     def transacciones_por_dia(transacciones):
-        """
-        Devuelve un diccionario:
-        { fecha: cantidad_de_transacciones }
-        """
         fechas = np.array([
             datetime.fromisoformat(t["fecha"]).date()
             for t in transacciones
@@ -116,10 +106,6 @@ class Estadisticas:
 
     @staticmethod
     def total_diario(transacciones):
-        """
-        Devuelve:
-        { fecha: {depositos: x, gastos: y, neto: z} }
-        """
         fechas = np.array([
             datetime.fromisoformat(t["fecha"]).date()
             for t in transacciones
@@ -146,3 +132,25 @@ class Estadisticas:
             }
 
         return resultado
+
+    # ============================================================
+    # MÉTRICAS GLOBALES PARA EL MENÚ ADMIN
+    # ============================================================
+
+    @staticmethod
+    def estadisticas_generales(trans):
+        total = len(trans)
+        depositos = len([t for t in trans if t["tipo"] == "deposito"])
+        retiros = len([t for t in trans if t["tipo"] == "retiro"])
+        transferencias = len([t for t in trans if t["tipo"] == "transferencia"])
+        monto_total = sum(float(t["monto"]) for t in trans) if total > 0 else 0
+        monto_promedio = monto_total / total if total > 0 else 0
+
+        return {
+            "total_transacciones": total,
+            "total_depositos": depositos,
+            "total_retiros": retiros,
+            "total_transferencias": transferencias,
+            "monto_total": monto_total,
+            "monto_promedio": monto_promedio
+        }

@@ -13,7 +13,7 @@ class Administrador(Usuario):
         return {
             "nombres": self.nombres,
             "apellidos": self.apellidos,
-            "username": self.dui,  # aquí dui almacena el username
+            "dui": self.dui,  # aquí dui almacena el username
             "pin": self.pin,
             "rol": self.rol
         }

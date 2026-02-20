@@ -1,5 +1,3 @@
-
-
 from domain.transferencia import Transferencia
 
 
@@ -93,3 +91,13 @@ class BankService:
         self.transferencia_repo.guardar(transferencia)
 
         return transferencia
+
+    # ============================================================
+    # CONSULTAS
+    # ============================================================
+
+    def obtener_transacciones(self, numero_cuenta):
+        """
+        Devuelve todas las transacciones asociadas a una cuenta.
+        """
+        return self.transaccion_repo.obtener_por_cuenta(numero_cuenta)
