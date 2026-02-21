@@ -22,7 +22,7 @@ class TransferenciaRepo:
             with open(self.filepath, "w", newline="", encoding="utf-8") as f:
                 writer = csv.DictWriter(
                     f,
-                    fieldnames=["id", "cuenta_origen", "cuenta_destino", "monto", "fecha"]
+                    fieldnames=["id", "cuenta_origen", "cuenta_destino","tipo_cuenta","tipo_transaccion", "monto", "fecha"]
                 )
                 writer.writeheader()
 
@@ -38,6 +38,8 @@ class TransferenciaRepo:
                     "id": row["id"],
                     "cuenta_origen": row["cuenta_origen"],
                     "cuenta_destino": row["cuenta_destino"],
+                    "tipo_cuenta": row["tipo_cuenta"],
+                    "tipo_transaccion": row["tipo_transaccion"],
                     "monto": float(row["monto"]),
                     "fecha": row["fecha"]
                 })
@@ -50,6 +52,6 @@ class TransferenciaRepo:
         with open(self.filepath, "a", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(
                 f,
-                fieldnames=["id", "cuenta_origen", "cuenta_destino", "monto", "fecha"]
+                fieldnames=["id", "cuenta_origen", "cuenta_destino","tipo_cuenta","tipo_transaccion", "monto", "fecha"]
             )
             writer.writerow(transferencia.to_dict())

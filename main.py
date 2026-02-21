@@ -157,6 +157,8 @@ def transferir_cliente(cliente, cuenta_repo, bank_service):
     print("\n--- Transferir ---")
     origen = input("Cuenta origen: ")
     destino = input("Cuenta destino: ")
+    tipoTransaccion = input("Tipo de transacción (depósito/retiro): ")
+    tipoCuenta = input("Tipo de cuenta (ahorro/corriente): ")
     monto = float(input("Monto a transferir: "))
 
     cuenta_origen = cuenta_repo.obtener_por_numero(origen)
@@ -362,3 +364,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
