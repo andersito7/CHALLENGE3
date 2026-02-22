@@ -1,3 +1,5 @@
 numero,cliente_id,tipo,saldo,activa
-001,12345678-9,ahorro,120.0,True
-002,12345678-9,ahorro,12.0,True
+001,12345678-9,ahorro,95.0,True
+002,12345678-9,ahorro,187.0,True
+003,12345678-9,ahorro,400.0,False
+004,98765432-1,ahorro,125.0,True

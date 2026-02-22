@@ -1,3 +1,5 @@
 id,cuenta_origen,cuenta_destino,tipo_cuenta,tipo_transaccion,monto,fecha
 4d34f396-19d6-449d-9ee5-198c6267bb0e,001,002,ahorro,transferencia,10.0,2026-02-20T14:33:29.623473
 c6da8bdd-e2a6-443e-870e-426cb9562ce2,001,002,corriente,transferencia,2.0,2026-02-20T14:39:51.305323
+cd617dc5-70db-413a-ae4a-683016f959a1,003,002,ahorro,depósito,100.0,2026-02-21T17:15:33.000482
+04b6c0c2-9700-4e91-bd09-cedffe9f3224,001,004,ahorro,depósito,25.0,2026-02-21T17:59:04.832965

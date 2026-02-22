@@ -64,31 +64,39 @@ class Visualizador:
         plt.close()
 
     def scatter_depositos_vs_gastos(self):
-        if "tipo_transaccion" not in self.df.columns:
-            print("⚠️ La columna 'tipo_transaccion' no está disponible.")
-            return
+        try:
+            df_trans = pd.read_csv("data/transacciones.csv", header=0)
+            df_trans["fecha"] = pd.to_datetime(df_trans["fecha"], errors="coerce")
 
-        cuentas = defaultdict(lambda: {"depositos": 0, "gastos": 0})
-        for _, t in self.df.iterrows():
-            if t["tipo_transaccion"] == "deposito":
-                cuentas[t["cuenta_destino"]]["depositos"] += t["monto"]
-            elif t["tipo_transaccion"] == "gasto":
-                cuentas[t["cuenta_origen"]]["gastos"] += t["monto"]
+            cuentas = defaultdict(lambda: {"depositos": 0, "gastos": 0})
+            for _, t in df_trans.iterrows():
+                if t["tipo"] == "deposito":
+                    cuentas[t["cuenta_id"]]["depositos"] += t["monto"]
+                elif t["tipo"] == "retiro":
+                    cuentas[t["cuenta_id"]]["gastos"] += t["monto"]
 
-        df_cuentas = pd.DataFrame([
-            {"cuenta_id": cid, "depositos": v["depositos"], "gastos": v["gastos"]}
-            for cid, v in cuentas.items()
-        ])
+            df_cuentas = pd.DataFrame([
+                {"cuenta_id": cid, "depositos": v["depositos"], "gastos": v["gastos"]}
+                for cid, v in cuentas.items()
+                if v["depositos"] > 0 and v["gastos"] > 0
+            ])
 
-        if df_cuentas.empty:
-            print("⚠️ No hay datos suficientes para generar el gráfico de depósitos vs gastos.")
-            return
+            if df_cuentas.empty:
+                print("⚠️ No hay datos suficientes para generar el gráfico de depósitos vs gastos.")
+                return
 
-        plt.figure(figsize=(8, 6))
-        sns.scatterplot(data=df_cuentas, x="depositos", y="gastos")
-        plt.title("Relación entre depósitos y gastos por cuenta")
-        plt.xlabel("Total depositado")
-        plt.ylabel("Total gastado")
-        plt.tight_layout()
-        plt.savefig("outputs/plots/scatter_depositos_vs_gastos.png")
-        plt.close()
+            plt.figure(figsize=(8, 6))
+            ax = sns.scatterplot(data=df_cuentas, x="depositos", y="gastos")
+
+            # Agregar etiquetas a cada punto
+            for _, row in df_cuentas.iterrows():
+                ax.text(row["depositos"] + 5, row["gastos"], row["cuenta_id"], fontsize=9)
+
+            plt.title("Relación entre depósitos y gastos por cuenta")
+            plt.xlabel("Total depositado")
+            plt.ylabel("Total retirado")
+            plt.tight_layout()
+            plt.savefig("outputs/plots/scatter_depositos_vs_gastos.png")
+            plt.close()
+        except Exception as e:
+            print(f"⚠️ Error al generar el gráfico de depósitos vs gastos: {e}")

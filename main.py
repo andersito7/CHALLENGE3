@@ -10,6 +10,9 @@ from repositories.transferencia_repo import TransferenciaRepo
 from services.admin_service import AdminService
 from services.bank_service import BankService
 from services.analytics_service import AnalyticsService
+from analytics.anomalias import AnomaliasDetector
+from analytics.grafo import GrafoTransacciones
+from analytics.visualizaciones import Visualizador
 
 
 # ============================================================
@@ -57,6 +60,32 @@ def login_cliente(usuario_repo):
 
     print(f"\nBienvenido, {usuario.nombres} {usuario.apellidos}")
     return usuario
+# ============================================================
+# LOGIN DEL admin
+# ============================================================
+def login_admin(usuario_repo):
+    print("\n===== LOGIN ADMINISTRADOR =====")
+    username = input("Ingrese su username: ")
+    pin = input("Ingrese su PIN: ")
+
+    usuario = usuario_repo.buscar_por_dui(username)  # O cambiar a buscar_por_username si lo tenés
+
+    if not usuario:
+        print("Administrador no encontrado.")
+        return None
+
+    if usuario.pin != pin:
+        print("PIN incorrecto.")
+        return None
+
+    if usuario.rol != "admin":
+        print("Este usuario no es un administrador.")
+        return None
+
+    print(f"\nBienvenido, {usuario.nombres} {usuario.apellidos}")
+    return usuario
+
+
 
 
 # ============================================================
@@ -128,6 +157,10 @@ def depositar_cliente(cliente, cuenta_repo, bank_service):
     numero = input("Número de cuenta: ")
     monto = float(input("Monto a depositar: "))
 
+    if monto <= 0:
+        print("El monto debe ser mayor a cero.")
+        return
+
     cuenta = cuenta_repo.obtener_por_numero(numero)
 
     if not cuenta or cuenta.cliente_id != cliente.dui:
@@ -138,10 +171,15 @@ def depositar_cliente(cliente, cuenta_repo, bank_service):
     print(f"Depósito realizado. ID transacción: {trans.id}")
 
 
+
 def retirar_cliente(cliente, cuenta_repo, bank_service):
     print("\n--- Retirar ---")
     numero = input("Número de cuenta: ")
     monto = float(input("Monto a retirar: "))
+
+    if monto <= 0:
+        print("El monto debe ser mayor a cero.")
+        return
 
     cuenta = cuenta_repo.obtener_por_numero(numero)
 
@@ -153,6 +191,7 @@ def retirar_cliente(cliente, cuenta_repo, bank_service):
     print(f"Retiro realizado. ID transacción: {trans.id}")
 
 
+
 def transferir_cliente(cliente, cuenta_repo, bank_service):
     print("\n--- Transferir ---")
     origen = input("Cuenta origen: ")
@@ -161,14 +200,19 @@ def transferir_cliente(cliente, cuenta_repo, bank_service):
     tipoCuenta = input("Tipo de cuenta (ahorro/corriente): ")
     monto = float(input("Monto a transferir: "))
 
+    if monto <= 0:
+        print("El monto debe ser mayor a cero.")
+        return
+
     cuenta_origen = cuenta_repo.obtener_por_numero(origen)
 
     if not cuenta_origen or cuenta_origen.cliente_id != cliente.dui:
         print("No puedes operar esta cuenta.")
         return
 
-    transferencia = bank_service.transferir(origen, destino, monto)
+    transferencia = bank_service.transferir(origen, destino, tipoCuenta, tipoTransaccion, monto)
     print(f"Transferencia realizada. ID: {transferencia.id}")
+
 
 
 def obtener_cuentas_cliente(cliente, cuenta_repo):
@@ -210,41 +254,40 @@ def menu_admin(admin_service, bank_service, analytics_service):
         print("6. Bloquear cuenta")
         print("7. Activar cuenta")
         print("8. Ver estadísticas del sistema")
-        print("9. Salir al menú principal")
+        print("9. Generar visualizaciones")
+        print("10. Ver grafo de transferencias")
+        print("11. Detectar anomalías")
+        print("12. Salir al menú principal")
 
         opcion = input("Seleccione una opción: ")
 
         try:
             if opcion == "1":
                 crear_cliente(admin_service)
-
             elif opcion == "2":
                 crear_admin(admin_service)
-
             elif opcion == "3":
                 crear_cuenta(admin_service)
-
             elif opcion == "4":
                 listar_usuarios(admin_service)
-
             elif opcion == "5":
                 listar_cuentas(admin_service)
-
             elif opcion == "6":
                 bloquear_cuenta(admin_service)
-
             elif opcion == "7":
                 activar_cuenta(admin_service)
-
             elif opcion == "8":
                 ver_estadisticas(analytics_service)
-
             elif opcion == "9":
+                generar_visualizaciones()
+            elif opcion == "10":
+                generar_grafo()
+            elif opcion == "11":
+                detectar_anomalias()
+            elif opcion == "12":
                 break
-
             else:
                 print("Opción inválida.")
-
         except Exception as e:
             print(f"Error: {e}")
 
@@ -330,6 +373,43 @@ def ver_estadisticas(analytics_service):
     print(f"Monto total movido: ${stats['monto_total']}")
     print(f"Monto promedio por transacción: ${stats['monto_promedio']}")
 
+def generar_visualizaciones():
+    print("\n--- Generando visualizaciones... ---")
+    vis = Visualizador()
+    vis.serie_temporal()
+    vis.heatmap_actividad()
+    vis.boxplot_cuentas()
+    vis.scatter_depositos_vs_gastos()
+    print("✅ Visualizaciones guardadas en 'outputs/plots/'.")
+
+def generar_grafo():
+    print("\n--- Generando grafo de transferencias... ---")
+    grafo = GrafoTransacciones()
+    grafo.construir_grafo()
+    grafo.visualizar_grafo()
+    grafo.resumen_metricas()
+    print("✅ Grafo guardado en 'outputs/plots/grafo_transferencias.png'.")
+
+def detectar_anomalias():
+    print("\n--- Detección de Anomalías ---")
+    detector = AnomaliasDetector()
+
+    z_outliers = detector.z_score_outliers()
+    structuring = detector.structuring()
+    nocturnas = detector.actividad_nocturna()
+
+    print(f"\n🔍 Z-score (outliers): {len(z_outliers)} transacciones detectadas.")
+    for t in z_outliers:
+        print(f"  - {t['fecha']} | {t['tipo']} | ${t['monto']} | ID: {t['id']}")
+
+    print(f"\n🔍 Structuring: {len(structuring)} pares detectados.")
+    for t1, t2 in structuring:
+        print(f"  - {t1['fecha']} y {t2['fecha']} | {t1['monto']} + {t2['monto']} | Cuenta: {t1['cuenta_id']}")
+
+    print(f"\n🌙 Actividad nocturna: {len(nocturnas)} transacciones detectadas.")
+    for t in nocturnas:
+        print(f"  - {t['fecha']} | {t['tipo']} | ${t['monto']} | ID: {t['id']}")
+
 
 # ============================================================
 # MENÚ PRINCIPAL
@@ -346,8 +426,10 @@ def main():
 
         opcion = input("Seleccione una opción: ")
 
-        if opcion == "1":
-            menu_admin(admin_service, bank_service, analytics_service)
+        if opcion=="1":
+            admin = login_admin(usuario_repo)
+            if admin:
+                menu_admin(admin_service, bank_service, analytics_service)
 
         elif opcion == "2":
             cliente = login_cliente(usuario_repo)

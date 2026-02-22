@@ -58,7 +58,7 @@ class BankService:
     # TRANSFERENCIAS
     # ============================================================
 
-    def transferir(self, origen_num, destino_num, monto):
+    def transferir(self, origen_num, destino_num, tipo_cuenta, tipo_transaccion, monto):
         """
         Ejecuta una transferencia completa:
         - Retira de la cuenta origen
@@ -80,7 +80,7 @@ class BankService:
         trans_out = origen.retirar(monto)
         trans_in = destino.depositar(monto)
 
-        transferencia = Transferencia(origen_num, destino_num, monto)
+        transferencia = Transferencia(origen_num, destino_num, tipo_cuenta, tipo_transaccion, monto)
 
         # Persistencia
         self.cuenta_repo.actualizar(origen)
