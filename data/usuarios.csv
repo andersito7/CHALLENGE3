@@ -1,0 +1,4 @@
+nombres,apellidos,dui,pin,rol
+Admin,Principal,admin1,1234,admin
+Juan,Pérez,12345678-9,9999,cliente
+Ander,Rodriguez,98765432-1,5555,cliente
